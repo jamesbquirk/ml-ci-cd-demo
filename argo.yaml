@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/username/ml-ci-cd-demo.git
+    repoURL: https://github.com/jamesbquirk/ml-ci-cd-demo.git
     targetRevision: main
     path: k8s
   destination:

@@ -3,16 +3,24 @@ name: CI-CD
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   pipeline:
     runs-on: ubuntu-latest
+    env:
+      PYTHONNOUSERSITE: "1"
     permissions:
       id-token: write
       contents: write
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@v4
@@ -21,10 +29,19 @@ jobs:
           aws-region: us-east-1
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip setuptools wheel
+          .venv/bin/python -m pip install --upgrade --force-reinstall -r requirements.txt
+
+      - name: Debug Python package resolution
+        run: |
+          .venv/bin/python -c "import sys, pathspec; print(sys.executable); print(pathspec.__version__); print(pathspec.__file__); print('\\n'.join(sys.path))"
+          .venv/bin/python -m pip show dvc pathspec
 
       - name: Pull data and model
-        run: dvc pull
+        run: |
+          .venv/bin/python -m dvc pull
 
       - name: Login DockerHub
         uses: docker/login-action@v3
@@ -37,7 +54,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: docker-username/ml-api:${{ github.sha }}
+          tags: jbquirk/ml-api:${{ github.sha }}
 
       - name: Update manifest image tag
         run: |
