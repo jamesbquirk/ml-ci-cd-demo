@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: ml-api
-          image: jbquirk/ml-api:v1
+          image: docker-username/ml-api:aa1fcf764e45325b8f0ae94debbf66cdc6960fcb
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
